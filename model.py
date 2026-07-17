@@ -463,8 +463,20 @@ def log_prob_of_pair(p_matrix, current_id, next_id):
 
     return float(array_log(prob))
 
-# Step 55 - sum_negative_log_probs (not yet solved)
-# TODO: implement
+# Step 55 - sum_negative_log_probs
+def sum_negative_log_probs(p_matrix, data):
+    # Initialize the negative log-likelihood accumulator
+    total_nll = 0.0
+    
+    # Iterate through every consecutive token pair in the data stream
+    for t in range(len(data) - 1):
+        curr_id = data[t]
+        next_id = data[t + 1]
+        
+        # Look up the log probability using your upstream helper and subtract it
+        total_nll -= log_prob_of_pair(p_matrix, curr_id, next_id)
+        
+    return float(total_nll)
 
 # Step 56 - average_nll (not yet solved)
 # TODO: implement
