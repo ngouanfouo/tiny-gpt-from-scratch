@@ -455,8 +455,13 @@ def decode_generated_sequence(ids, itos):
     # TODO: turn ids into a readable string using itos
     return "".join(decode_token(idx,itos) if 'decode_token' in globals() else itos[idx] for idx in ids)
 
-# Step 54 - log_prob_of_pair (not yet solved)
-# TODO: implement
+# Step 54 - log_prob_of_pair
+def log_prob_of_pair(p_matrix, current_id, next_id):
+    """Return the log probability of a single (current, next) bigram."""
+    # TODO: pick out P[current_id, next_id] and return its natural log
+    prob=index_element(p_matrix,current_id,next_id)
+
+    return float(array_log(prob))
 
 # Step 55 - sum_negative_log_probs (not yet solved)
 # TODO: implement
