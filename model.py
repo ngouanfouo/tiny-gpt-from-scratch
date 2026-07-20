@@ -1716,8 +1716,51 @@ def compute_d_head(d_model, n_heads):
     d_head = d_model // n_heads
     return d_head
 
-# Step 124 - multihead_masked_softmax_scores (not yet solved)
-# TODO: implement
+# Step 124 - multihead_masked_softmax_scores
+import numpy as np
+
+def multihead_masked_softmax_scores(scores, mask):
+    """Apply causal mask and row-wise softmax to multi-head attention scores.
+
+    Args:
+        scores: ndarray of shape (B, n_heads, T, T)
+        mask:   ndarray of shape (T, T), True where positions are kept
+
+    Returns:
+        weights: ndarray of shape (B, n_heads, T, T)
+    """
+    # TODO: mask future positions then row-wise softmax over the last axis
+    
+    # Get dimensions
+    B, n_heads, T, _ = scores.shape
+    
+    # Broadcast mask to match scores shape: (B, n_heads, T, T)
+    mask_expanded = np.broadcast_to(mask, (B, n_heads, T, T))
+    
+    # Create a copy to avoid mutating the input
+    masked_scores = scores.copy()
+    
+    # Set positions where mask is False to -inf
+    masked_scores[~mask_expanded] = -np.inf
+    
+    # Apply row-wise softmax over the last axis with numerical stability
+    # Subtract max along the last axis for stability
+    max_vals = np.max(masked_scores, axis=-1, keepdims=True)
+    stable_scores = masked_scores - max_vals
+    
+    # Compute exponentials (exp of -inf is 0)
+    exp_scores = np.exp(stable_scores)
+    
+    # Sum along last axis
+    sum_exp = np.sum(exp_scores, axis=-1, keepdims=True)
+    
+    # Normalize to get probabilities
+    weights = exp_scores / sum_exp
+    
+    # Replace any NaN with 0 (can happen if all values in a row are -inf)
+    weights = np.nan_to_num(weights, nan=0.0)
+    
+    return weights
 
 # Step 125 - multihead_weighted_sum (not yet solved)
 # TODO: implement
