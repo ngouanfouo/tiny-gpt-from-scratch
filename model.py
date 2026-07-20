@@ -553,8 +553,23 @@ def forward_logits_lookup(w, ids):
     # TODO: return the logits for a batch of token ids by direct row lookup into W.
     return w[ids]
 
-# Step 63 - logits_to_probs_rowwise (not yet solved)
-# TODO: implement
+# Step 63 - logits_to_probs_rowwise
+import numpy as np
+
+def logits_to_probs_rowwise(logits):
+    # TODO: convert a (B, V) logits matrix into a row-wise probability matrix
+    
+    # Subtract the row-wise maximum for numerical stability
+    row_maxes = np.max(logits, axis=1, keepdims=True)
+    stabilized_logits = logits - row_maxes
+    
+    # Exponentiate the stabilized values
+    exp_logits = np.exp(stabilized_logits)
+    
+    # Divide by the sum of exponents along each row to get the probabilities
+    probs = exp_logits / np.sum(exp_logits, axis=1, keepdims=True)
+    
+    return probs
 
 # Step 64 - gather_correct_token_probs (not yet solved)
 # TODO: implement
