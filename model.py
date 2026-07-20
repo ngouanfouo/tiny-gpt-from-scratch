@@ -1599,8 +1599,24 @@ def qkv_projection_backward(d_q, d_k, d_v, cache):
         'dw_v': dw_v
     }
 
-# Step 116 - choose_attention_head_config (not yet solved)
-# TODO: implement
+# Step 116 - choose_attention_head_config
+def choose_attention_head_config(d_model, n_heads):
+    """Return a config dict {'n_heads', 'd_head', 'd_model'} for multi-head attention."""
+    # TODO: split d_model into n_heads equal-sized d_head chunks and return the config dict
+    
+    # Check that n_heads evenly divides d_model
+    if d_model % n_heads != 0:
+        raise ValueError(f"n_heads ({n_heads}) must evenly divide d_model ({d_model})")
+    
+    # Compute per-head dimension
+    d_head = d_model // n_heads
+    
+    # Return config dict
+    return {
+        'n_heads': n_heads,
+        'd_head': d_head,
+        'd_model': d_model
+    }
 
 # Step 117 - create_multihead_qkv_projections (not yet solved)
 # TODO: implement
