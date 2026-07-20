@@ -1327,8 +1327,27 @@ def build_causal_mask(seq_len):
     
     return mask
 
-# Step 106 - apply_causal_mask (not yet solved)
-# TODO: implement
+# Step 106 - apply_causal_mask
+import numpy as np
+
+def apply_causal_mask(scaled_scores, causal_mask):
+    """Replace future positions in scaled_scores with -inf using causal_mask."""
+    # TODO: return a (B,T,T) array where positions with causal_mask False are -inf...
+    
+    # Create a copy to avoid mutating the input
+    masked_scores = scaled_scores.copy()
+    
+    # Get the batch size
+    B = scaled_scores.shape[0]
+    
+    # Expand mask to match the shape of scores: (B, T, T)
+    # The mask has shape (T, T), we need to tile it B times along axis 0
+    mask_expanded = np.tile(causal_mask, (B, 1, 1))
+    
+    # Set positions where mask is False to -inf
+    masked_scores[~mask_expanded] = -np.inf
+    
+    return masked_scores
 
 # Step 107 - softmax_attention_weights (not yet solved)
 # TODO: implement
