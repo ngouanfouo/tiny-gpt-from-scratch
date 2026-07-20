@@ -1941,8 +1941,64 @@ def ffn_linear_two_forward(a1, w2, b2):
         'cache': cache
     }
 
-# Step 134 - ffn_backward (not yet solved)
-# TODO: implement
+# Step 134 - ffn_backward
+import numpy as np
+
+def ffn_backward(d_out, cache):
+    # TODO: backprop through the full 2-layer FFN and return gradients for all parameters.
+    
+    # Extract values from cache
+    x = cache['x']      # shape (B, T, d_model)
+    w1 = cache['w1']    # shape (d_model, d_ff)
+    h1 = cache['h1']    # shape (B, T, d_ff)
+    a1 = cache['a1']    # shape (B, T, d_ff)
+    w2 = cache['w2']    # shape (d_ff, d_model)
+    
+    # Get dimensions
+    B, T, d_model = x.shape
+    d_ff = w1.shape[1]
+    
+    # Step 1: Backward through second linear layer (a1 @ w2 + b2)
+    # d_out is gradient w.r.t. h2 (output of FFN)
+    
+    # For the linear layer: h2 = a1 @ w2 + b2
+    # Gradient w.r.t. a1: d_a1 = d_out @ w2.T
+    d_a1 = d_out @ w2.T  # shape (B, T, d_ff)
+    
+    # Gradient w.r.t. w2: dw2 = a1.T @ d_out
+    # Reshape to 2D for matrix multiplication
+    a1_flat = a1.reshape(-1, d_ff)     # (B*T, d_ff)
+    d_out_flat = d_out.reshape(-1, d_model)  # (B*T, d_model)
+    dw2 = a1_flat.T @ d_out_flat       # (d_ff, d_model)
+    
+    # Gradient w.r.t. b2: sum over batch and time dimensions
+    db2 = np.sum(d_out, axis=(0, 1))   # (d_model,)
+    
+    # Step 2: Backward through ReLU activation
+    # d_h1 = d_a1 where h1 > 0, else 0
+    d_h1 = d_a1 * (h1 > 0)  # shape (B, T, d_ff)
+    
+    # Step 3: Backward through first linear layer (x @ w1 + b1)
+    # h1 = x @ w1 + b1
+    
+    # Gradient w.r.t. x: dx = d_h1 @ w1.T
+    dx = d_h1 @ w1.T  # shape (B, T, d_model)
+    
+    # Gradient w.r.t. w1: dw1 = x.T @ d_h1
+    x_flat = x.reshape(-1, d_model)     # (B*T, d_model)
+    d_h1_flat = d_h1.reshape(-1, d_ff)  # (B*T, d_ff)
+    dw1 = x_flat.T @ d_h1_flat          # (d_model, d_ff)
+    
+    # Gradient w.r.t. b1: sum over batch and time dimensions
+    db1 = np.sum(d_h1, axis=(0, 1))     # (d_ff,)
+    
+    return {
+        'dx': dx,
+        'dw1': dw1,
+        'db1': db1,
+        'dw2': dw2,
+        'db2': db2
+    }
 
 # Step 135 - residual_forward (not yet solved)
 # TODO: implement
