@@ -1404,8 +1404,40 @@ def apply_output_projection(attn_out, w_o):
     
     return out
 
-# Step 110 - output_projection_backward (not yet solved)
-# TODO: implement
+# Step 110 - output_projection_backward
+import numpy as np
+
+def output_projection_backward(d_proj, cache):
+    """Backprop through proj = attn_out @ w_o. Return {'d_attn_out', 'dw_o'}."""
+    # TODO: backprop through proj = attn_out @ w_o, return gradients for attn_out and w_o
+    
+    # Extract cached values
+    attn_out = cache['attn_out']  # shape (B, T, d_head)
+    w_o = cache['w_o']            # shape (d_head, d_model)
+    
+    # Gradient w.r.t. attn_out: d_attn_out = d_proj @ w_o.T
+    # d_proj shape: (B, T, d_model), w_o.T shape: (d_model, d_head)
+    d_attn_out = d_proj @ w_o.T   # shape (B, T, d_head)
+    
+    # Gradient w.r.t. w_o: dw_o = attn_out.T @ d_proj
+    # attn_out shape: (B, T, d_head), we need to rearrange for matrix multiplication
+    # We need to sum over batch and sequence dimensions
+    # attn_out.T would be (d_head, B, T) if we transpose, but we want (d_head, d_model)
+    # Actually: attn_out has shape (B, T, d_head), d_proj has shape (B, T, d_model)
+    # We can reshape to 2D: attn_out_2d = (B*T, d_head), d_proj_2d = (B*T, d_model)
+    # Then dw_o = attn_out_2d.T @ d_proj_2d = (d_head, d_model)
+    B, T, d_head = attn_out.shape
+    d_model = d_proj.shape[-1]
+    
+    attn_out_2d = attn_out.reshape(-1, d_head)  # (B*T, d_head)
+    d_proj_2d = d_proj.reshape(-1, d_model)     # (B*T, d_model)
+    
+    dw_o = attn_out_2d.T @ d_proj_2d            # (d_head, d_model)
+    
+    return {
+        'd_attn_out': d_attn_out,
+        'dw_o': dw_o
+    }
 
 # Step 111 - attention_value_backward (not yet solved)
 # TODO: implement
