@@ -1209,8 +1209,24 @@ def add_token_and_positional_embeddings(token_emb, pos_emb):
     combined=token_emb + pos_emb
     return combined
 
-# Step 98 - embedding_sum_backward (not yet solved)
-# TODO: implement
+# Step 98 - embedding_sum_backward
+import numpy as np
+
+def embedding_sum_backward(d_out):
+    """Backprop through H = token_emb + pos_emb (with broadcasting over batch)."""
+    # TODO: route d_out to both branches, reducing over the batch axis for pos_emb.
+    
+    # Gradient w.r.t. token_emb is the same as d_out
+    d_token_emb = d_out  # shape (B, T, d_model)
+    
+    # Gradient w.r.t. pos_emb: sum d_out over the batch dimension
+    # Since pos_emb is broadcast to every batch element, the gradient is the sum over batch
+    d_pos_emb = sum_axis0(d_out)  # shape (T, d_model)
+    
+    return {
+        'd_token_emb': d_token_emb,
+        'd_pos_emb': d_pos_emb
+    }
 
 # Step 99 - create_qkv_projections (not yet solved)
 # TODO: implement
