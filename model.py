@@ -852,8 +852,21 @@ def relu_forward(x):
 
     return {'y':y,'cache':cache}
 
-# Step 82 - relu_backward (not yet solved)
-# TODO: implement
+# Step 82 - relu_backward
+import numpy as np
+
+def relu_backward(dy, cache):
+    """Backward pass for ReLU. cache['x'] holds the original input."""
+    # TODO: return dx with gradient zeroed where the cached input was non-positive.
+    
+    # Extract the original input from the cache
+    x = cache['x']
+    
+    # Gradient is 1 for positive inputs, 0 for non-positive inputs
+    # dy is passed through only where x > 0
+    dx = dy * (x > 0)
+    
+    return dx
 
 # Step 83 - softmax_cross_entropy_backward (not yet solved)
 # TODO: implement
