@@ -796,8 +796,20 @@ Shape check: X is (B, D_in), dY is (B, D_out), so X.T @ dY has shape (D_in, D_ou
 
 Therefore: dL/dW = X.T @ dY"""
 
-# Step 77 - linear_backward_dx (not yet solved)
-# TODO: implement
+# Step 77 - linear_backward_dx
+import numpy as np
+
+def linear_backward_dx(dy, cache):
+    # TODO: compute the gradient of the loss w.r.t. the linear layer input X given dy and cache
+    
+    # Extract cached values
+    x = cache['x']  # shape (B, D_in)
+    w = cache['w']  # shape (D_in, D_out)
+    
+    # Compute gradient w.r.t. input: dL/dX = dY @ W.T
+    dx = dy @ w.T  # shape (B, D_in)
+    
+    return dx
 
 # Step 78 - linear_backward_dw (not yet solved)
 # TODO: implement
