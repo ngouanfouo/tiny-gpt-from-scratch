@@ -658,8 +658,46 @@ def sgd_update_w(w, dw, learning_rate):
     w_new=w-learning_rate*dw
     return w_new
 
-# Step 71 - run_one_training_step (not yet solved)
-# TODO: implement
+# Step 71 - run_one_training_step
+import numpy as np
+
+def run_one_training_step(w, ids, targets, learning_rate):
+    """Run forward, loss, backward, and SGD update once. Return {'w': new_w, 'loss': float}."""
+    # TODO: chain the upstream forward/loss/backward/update helpers into one step
+    
+    # Forward pass: compute logits from ids and w using one-hot encoding
+    B = len(ids)
+    V, D = w.shape
+    onehot = np.zeros((B, V))
+    onehot[np.arange(B), ids] = 1.0
+    logits = onehot @ w  # shape (B, D)
+    
+    # Compute probabilities using softmax (row-wise)
+    exp_logits = np.exp(logits - np.max(logits, axis=1, keepdims=True))  # numerical stability
+    probs = exp_logits / np.sum(exp_logits, axis=1, keepdims=True)
+    
+    # Compute loss (before update)
+    # Gather correct token probabilities
+    correct_probs = probs[np.arange(B), targets]
+    log_probs = np.log(correct_probs + 1e-10)  # small epsilon for numerical stability
+    loss = -np.mean(log_probs)
+    
+    # Backward pass: compute gradient of loss w.r.t. logits
+    onehot_targets = np.zeros_like(probs)
+    onehot_targets[np.arange(B), targets] = 1.0
+    dlogits = (probs - onehot_targets) / B
+    
+    # Compute gradient w.r.t. weights using scatter-add
+    vocab_size = w.shape[0]
+    dW = np.zeros_like(w)
+    for b in range(B):
+        row_idx = ids[b]
+        dW[row_idx] += dlogits[b]
+    
+    # Update weights using SGD
+    new_w = w - learning_rate * dW
+    
+    return {'w': new_w, 'loss': float(loss)}
 
 # Step 72 - train_neural_bigram_loop (not yet solved)
 # TODO: implement
