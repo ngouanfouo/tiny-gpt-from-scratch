@@ -699,8 +699,36 @@ def run_one_training_step(w, ids, targets, learning_rate):
     
     return {'w': new_w, 'loss': float(loss)}
 
-# Step 72 - train_neural_bigram_loop (not yet solved)
-# TODO: implement
+# Step 72 - train_neural_bigram_loop
+import numpy as np
+
+def train_neural_bigram_loop(w, data, block_size, batch_size, learning_rate, num_steps, log_every):
+    """Run the neural bigram training loop and return {'w', 'loss_history'}."""
+    # TODO: repeatedly sample a batch, run one training step, and log loss every log_every steps
+    
+    # Initialize random number generator
+    rng = np.random.default_rng()
+    loss_history = []
+    
+    for step in range(num_steps):
+        # Sample a batch using get_batch with rng parameter
+        inputs, targets = get_batch(data, block_size, batch_size, rng)
+        
+        # Flatten the (batch_size, block_size) windows into a flat stream
+        flat_inputs = inputs.flatten()
+        flat_targets = targets.flatten()
+        
+        # Run one training step
+        result = run_one_training_step(w, flat_inputs, flat_targets, learning_rate)
+        
+        # Update weights
+        w = result['w']
+        
+        # Log loss at step 0 and then every log_every steps
+        if step == 0 or (step + 1) % log_every == 0:
+            loss_history.append(result['loss'])
+    
+    return {'w': w, 'loss_history': loss_history}
 
 # Step 73 - sample_from_neural_bigram (not yet solved)
 # TODO: implement
