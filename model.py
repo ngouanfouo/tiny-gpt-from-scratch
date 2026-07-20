@@ -995,8 +995,27 @@ def layernorm_backward_subtract_mean(dy, cache):
     
     return dx
 
-# Step 89 - layernorm_backward_divide_std (not yet solved)
-# TODO: implement
+# Step 89 - layernorm_backward_divide_std
+import numpy as np
+
+def layernorm_backward_divide_std(dy, cache):
+    """Propagate dy through the divide-by-std step of LayerNorm."""
+    # TODO: propagate the upstream gradient through the divide-by-std step of LayerNorm
+    
+    # Extract needed values from cache
+    x_hat = cache['x_hat']  # shape (B, D) - already normalized
+    var = cache['var']      # shape (B, 1)
+    eps = cache['eps']      # scalar
+    
+    # Compute the standard deviation (with eps for stability)
+    std = np.sqrt(var + eps)  # shape (B, 1)
+    
+    # For y = x_centered / std, treating std as constant:
+    # dy/dx_centered = dy / std
+    # So dx_centered = dy / std
+    dx = dy / std
+    
+    return dx
 
 # Step 90 - layernorm_backward_full (not yet solved)
 # TODO: implement
