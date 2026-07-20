@@ -1228,8 +1228,27 @@ def embedding_sum_backward(d_out):
         'd_pos_emb': d_pos_emb
     }
 
-# Step 99 - create_qkv_projections (not yet solved)
-# TODO: implement
+# Step 99 - create_qkv_projections
+import numpy as np
+
+def create_qkv_projections(d_model, d_head, scale=0.02):
+    # TODO: return a dict with 'Wq','Wk','Wv', each of shape (d_model, d_head)
+    
+    # Create projection matrices with different seeds
+    Wq = make_2d_random(d_model, d_head, seed=0)
+    Wq = scale_w_small(Wq, scale)
+    
+    Wk = make_2d_random(d_model, d_head, seed=1)
+    Wk = scale_w_small(Wk, scale)
+    
+    Wv = make_2d_random(d_model, d_head, seed=2)
+    Wv = scale_w_small(Wv, scale)
+    
+    return {
+        'Wq': Wq,
+        'Wk': Wk,
+        'Wv': Wv
+    }
 
 # Step 100 - compute_query (not yet solved)
 # TODO: implement
