@@ -1520,8 +1520,39 @@ def scale_scores_backward(d_scaled_scores, d_head):
     
     return d_scores
 
-# Step 114 - qk_scores_backward (not yet solved)
-# TODO: implement
+# Step 114 - qk_scores_backward
+import numpy as np
+
+def qk_scores_backward(d_scores, cache):
+    """Backprop through scores = Q @ K^T.
+
+    d_scores: (B, T, T)
+    cache: dict with 'q' and 'k', each (B, T, d_head)
+    returns: {'d_q': (B, T, d_head), 'd_k': (B, T, d_head)}
+    """
+    # TODO: backprop scores = Q @ K^T to obtain gradients for Q and K
+    
+    # Extract Q and K from cache
+    q = cache['q']  # shape (B, T, d_head)
+    k = cache['k']  # shape (B, T, d_head)
+    
+    # Compute gradient w.r.t. Q: d_q = d_scores @ K
+    # d_scores: (B, T, T), K: (B, T, d_head)
+    # Result: (B, T, d_head)
+    d_q = d_scores @ k
+    
+    # Compute gradient w.r.t. K: d_k = d_scores.T @ Q
+    # d_scores.T: (B, T, T) transposed over last two dims -> (B, T, T)
+    # Q: (B, T, d_head)
+    # We need to compute d_k = d_scores^T @ Q
+    # For each batch: d_scores[b] is (T, T), Q[b] is (T, d_head)
+    # Result: (B, T, d_head)
+    d_k = d_scores.transpose(0, 2, 1) @ q
+    
+    return {
+        'd_q': d_q,
+        'd_k': d_k
+    }
 
 # Step 115 - qkv_projection_backward (not yet solved)
 # TODO: implement
