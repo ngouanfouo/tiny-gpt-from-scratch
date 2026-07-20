@@ -1291,8 +1291,20 @@ def compute_value(x, w_v):
     
     return V
 
-# Step 103 - compute_attention_scores (not yet solved)
-# TODO: implement
+# Step 103 - compute_attention_scores
+import numpy as np
+
+def compute_attention_scores(q, k):
+    """Return raw attention scores Q @ K^T with shape (B, T, T)."""
+    # TODO: compute raw attention scores Q @ K^T per batch element
+    
+    # Compute attention scores: q @ k^T
+    # q shape: (B, T, d_head), k shape: (B, T, d_head)
+    # k^T shape for the last two dimensions: (T, d_head) -> (d_head, T)
+    # Result shape: (B, T, T)
+    scores = q @ k.transpose(0, 2, 1)
+    
+    return scores
 
 # Step 104 - scale_attention_scores (not yet solved)
 # TODO: implement
