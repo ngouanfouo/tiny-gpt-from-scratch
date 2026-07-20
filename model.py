@@ -1465,8 +1465,47 @@ def attention_value_backward(d_attn_out, cache):
         'd_v': d_v
     }
 
-# Step 112 - masked_softmax_backward (not yet solved)
-# TODO: implement
+# Step 112 - masked_softmax_backward
+import numpy as np
+
+def masked_softmax_backward(d_attn, cache):
+    """Backprop through the masked row-wise softmax.
+
+    d_attn: ndarray of shape (B, T, T) -- gradient w.r.t. attention weights.
+    cache: dict with 'attn' (B,T,T) and 'causal_mask' (T,T) boolean.
+    Returns d_masked_scores of shape (B, T, T).
+    """
+    # TODO: propagate the softmax Jacobian per row and zero out masked positions.
+    
+    # Extract values from cache
+    attn = cache['attn']          # shape (B, T, T)
+    causal_mask = cache['causal_mask']  # shape (T, T)
+    
+    # Get dimensions
+    B, T, _ = attn.shape
+    
+    # Initialize gradient with zeros
+    d_masked_scores = np.zeros_like(attn)
+    
+    # For each row in each batch element, compute softmax Jacobian
+    for b in range(B):
+        for i in range(T):
+            # Get the attention probabilities for this row
+            p = attn[b, i]  # shape (T,)
+            
+            # Compute the Jacobian: J = diag(p) - p @ p.T
+            # This is the gradient of softmax w.r.t. the input scores
+            J = np.diag(p) - np.outer(p, p)
+            
+            # Apply Jacobian to the upstream gradient for this row
+            d_masked_scores[b, i] = J @ d_attn[b, i]
+    
+    # Zero out positions that were masked (causal_mask is False)
+    # Expand mask to (B, T, T) for broadcasting
+    mask_expanded = np.tile(causal_mask, (B, 1, 1))
+    d_masked_scores[~mask_expanded] = 0.0
+    
+    return d_masked_scores
 
 # Step 113 - scale_scores_backward (not yet solved)
 # TODO: implement
