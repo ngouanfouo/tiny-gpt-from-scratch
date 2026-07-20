@@ -880,8 +880,21 @@ def softmax_cross_entropy_backward(probs, targets):
     digits=(probs-onehot)/B
     return digits
 
-# Step 84 - layernorm_forward_mean (not yet solved)
-# TODO: implement
+# Step 84 - layernorm_forward_mean
+import numpy as np
+
+def layernorm_forward_mean(x):
+    """Return the mean of x over the last axis, shape (B, 1)."""
+    # TODO: compute the row-wise mean using sum_keepdims over axis=-1
+    
+    # Use sum_keepdims to sum over the last axis and keep dimensions
+    summed = sum_keepdims(x, axis=-1)
+    
+    # Divide by the size of the last dimension to get the mean
+    D = x.shape[-1]
+    mean = summed / D
+    
+    return mean
 
 # Step 85 - layernorm_forward_variance (not yet solved)
 # TODO: implement
