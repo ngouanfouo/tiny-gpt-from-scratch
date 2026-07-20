@@ -1672,8 +1672,19 @@ def reshape_to_heads(x, n_heads, d_head):
     
     return out
 
-# Step 120 - transpose_heads_to_front (not yet solved)
-# TODO: implement
+# Step 120 - transpose_heads_to_front
+import numpy as np
+
+def transpose_heads_to_front(x_heads):
+    """Transpose (B, T, n_heads, d_head) to (B, n_heads, T, d_head)."""
+    # TODO: move the heads axis in front of the time axis
+    
+    # Transpose: move axis 2 (n_heads) to position 1
+    # Original: (B, T, n_heads, d_head)
+    # Desired:  (B, n_heads, T, d_head)
+    y = np.transpose(x_heads, (0, 2, 1, 3))
+    
+    return y
 
 # Step 121 - get_multihead_n_heads (not yet solved)
 # TODO: implement
