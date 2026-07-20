@@ -1704,8 +1704,17 @@ def get_multihead_sequence_length(x):
     # Return the second dimension (T)
     return shape[1]
 
-# Step 123 - compute_d_head (not yet solved)
-# TODO: implement
+# Step 123 - compute_d_head
+def compute_d_head(d_model, n_heads):
+    # TODO: return the per-head dimension d_head for multi-head attention.
+    
+    # Check that n_heads evenly divides d_model
+    if d_model % n_heads != 0:
+        raise ValueError(f"n_heads ({n_heads}) must evenly divide d_model ({d_model})")
+    
+    # Compute and return per-head dimension
+    d_head = d_model // n_heads
+    return d_head
 
 # Step 124 - multihead_masked_softmax_scores (not yet solved)
 # TODO: implement
