@@ -1250,8 +1250,19 @@ def create_qkv_projections(d_model, d_head, scale=0.02):
         'Wv': Wv
     }
 
-# Step 100 - compute_query (not yet solved)
-# TODO: implement
+# Step 100 - compute_query
+import numpy as np
+
+def compute_query(x, w_q):
+    """Project x (B, T, d_model) into queries Q (B, T, d_head) using w_q."""
+    # TODO: project x into the query space using w_q
+    
+    # Compute Q = x @ w_q
+    # x shape: (B, T, d_model), w_q shape: (d_model, d_head)
+    # Result shape: (B, T, d_head)
+    Q = x @ w_q
+    
+    return Q
 
 # Step 101 - compute_key (not yet solved)
 # TODO: implement
