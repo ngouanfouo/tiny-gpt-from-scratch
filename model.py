@@ -1264,8 +1264,19 @@ def compute_query(x, w_q):
     
     return Q
 
-# Step 101 - compute_key (not yet solved)
-# TODO: implement
+# Step 101 - compute_key
+import numpy as np
+
+def compute_key(x, w_k):
+    """Project x through Wk to get keys K of shape (B, T, d_head)."""
+    # TODO: project the (B, T, d_model) input through w_k to produce (B, T, d_head) keys.
+    
+    # Compute K = x @ w_k
+    # x shape: (B, T, d_model), w_k shape: (d_model, d_head)
+    # Result shape: (B, T, d_head)
+    K = x @ w_k
+    
+    return K
 
 # Step 102 - compute_value (not yet solved)
 # TODO: implement
