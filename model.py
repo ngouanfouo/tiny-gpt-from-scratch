@@ -1776,8 +1776,18 @@ def multihead_weighted_sum(weights, v_heads):
     
     return output
 
-# Step 126 - transpose_heads_to_back (not yet solved)
-# TODO: implement
+# Step 126 - transpose_heads_to_back
+import numpy as np
+
+def transpose_heads_to_back(x_heads):
+    # TODO: move the heads axis back so the result has shape (B, T, n_heads, d_head).
+    
+    # Transpose: move axis 1 (n_heads) to position 2
+    # Original: (B, n_heads, T, d_head)
+    # Desired:  (B, T, n_heads, d_head)
+    y = np.transpose(x_heads, (0, 2, 1, 3))
+    
+    return y
 
 # Step 127 - get_multihead_output_sequence_length (not yet solved)
 # TODO: implement
