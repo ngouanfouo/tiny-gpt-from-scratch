@@ -590,8 +590,22 @@ def cross_entropy_loss(probs, targets):
     loss=-np.mean(log_probs)
     return loss
 
-# Step 66 - derive_dlogits_on_paper (not yet solved)
-# TODO: implement
+# Step 66 - derive_dlogits_on_paper
+def derive_dlogits_on_paper():
+    """Return a string summarizing the derivation of dL/dlogits for mean cross-entropy."""
+    # TODO: return a short written derivation ending in dL/dlogits = (probs - onehot(targets)) / B
+    
+    return """Derivation of dL/dlogits for mean cross-entropy:
+
+1. Let L = -(1/B) * sum_i log(p_i[y_i]) where p_i[y_i] = exp(logits_i[y_i]) / sum_j exp(logits_i[j])
+2. For a single example i, L_i = -log(p_i[y_i]) = -logits_i[y_i] + log(sum_j exp(logits_i[j]))
+3. The derivative of the log-sum-exp term uses the softmax: d/dlogits_i[k] log(sum_j exp(logits_i[j])) = exp(logits_i[k]) / sum_j exp(logits_i[j]) = softmax(logits_i)[k]
+4. Derivative w.r.t. logits_i[k]:
+   - If k == y_i: dL_i/dlogits_i[k] = -1 + softmax(logits_i)[k] = softmax(logits_i)[k] - 1
+   - If k != y_i: dL_i/dlogits_i[k] = 0 + softmax(logits_i)[k] = softmax(logits_i)[k] - 0
+5. Thus dL_i/dlogits_i = softmax(logits_i) - onehot(y_i) = probs_i - onehot(y_i)
+6. Averaging over the batch: dL/dlogits = (1/B) * sum_i (probs_i - onehot(y_i))
+7. Therefore: dL/dlogits = (probs - onehot(targets)) / B"""
 
 # Step 67 - compute_dlogits (not yet solved)
 # TODO: implement
