@@ -2016,8 +2016,41 @@ def residual_backward(d_y):
 
     return d_x,d_sublayer_out
 
-# Step 137 - pre_layernorm_sublayer_forward (not yet solved)
-# TODO: implement
+# Step 137 - pre_layernorm_sublayer_forward
+import numpy as np
+
+def pre_layernorm_sublayer_forward(x, ln_params, sublayer_fn, sublayer_params):
+    # TODO: apply LayerNorm to x, run sublayer_fn on the result, then residual-add back to x.
+    
+    # Extract LayerNorm parameters
+    gamma = ln_params['gamma']
+    beta = ln_params['beta']
+    eps = ln_params.get('eps', 1e-5)
+    
+    # Step 1: Apply LayerNorm to the input
+    ln_out = layernorm_forward_affine(x, gamma, beta, eps)
+    x_norm = ln_out['y']
+    ln_cache = ln_out['cache']
+    
+    # Step 2: Run the sublayer function on the normalized input
+    sublayer_out = sublayer_fn(x_norm, sublayer_params)
+    sublayer_y = sublayer_out['y']
+    sublayer_cache = sublayer_out['cache']
+    
+    # Step 3: Apply residual connection
+    y = residual_forward(x, sublayer_y)
+    
+    # Build cache for backward pass
+    cache = {
+        'x': x,
+        'ln_cache': ln_cache,
+        'sublayer_cache': sublayer_cache
+    }
+    
+    return {
+        'y': y,
+        'cache': cache
+    }
 
 # Step 138 - transformer_block_forward (not yet solved)
 # TODO: implement
