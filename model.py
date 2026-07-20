@@ -937,8 +937,36 @@ def layernorm_forward_normalize(x, mean, var, eps):
     x_hat=x_centered/std
     return x_hat
 
-# Step 87 - layernorm_forward_affine (not yet solved)
-# TODO: implement
+# Step 87 - layernorm_forward_affine
+import numpy as np
+
+def layernorm_forward_affine(x, gamma, beta, eps):
+    """Run LayerNorm forward over rows of x with affine params gamma, beta."""
+    # TODO: normalize each row to zero mean / unit variance, then apply gamma and beta.
+    
+    # Step 1: Compute mean and variance
+    mean = layernorm_forward_mean(x)  # shape (B, 1)
+    var = layernorm_forward_variance(x, mean)  # shape (B, 1)
+    
+    # Step 2: Normalize
+    x_hat = layernorm_forward_normalize(x, mean, var, eps)  # shape (B, D)
+    
+    # Step 3: Apply affine transformation (gamma * x_hat + beta)
+    # elementwise_multiply multiplies each column of x_hat by gamma (broadcast)
+    scaled = elementwise_multiply(x_hat, gamma)  # shape (B, D)
+    y = vector_matrix_broadcast_add(scaled, beta)  # shape (B, D)
+    
+    # Cache all values needed for backward pass
+    cache = {
+        'x': x,
+        'x_hat': x_hat,
+        'mean': mean,
+        'var': var,
+        'gamma': gamma,
+        'eps': eps
+    }
+    
+    return {'y': y, 'cache': cache}
 
 # Step 88 - layernorm_backward_subtract_mean (not yet solved)
 # TODO: implement
