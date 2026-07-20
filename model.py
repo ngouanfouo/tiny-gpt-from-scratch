@@ -1390,8 +1390,19 @@ def attention_weighted_values(attn, v):
     
     return out
 
-# Step 109 - apply_output_projection (not yet solved)
-# TODO: implement
+# Step 109 - apply_output_projection
+import numpy as np
+
+def apply_output_projection(attn_out, w_o):
+    """Project attention output (B,T,d_head) through Wo (d_head,d_model)."""
+    # TODO: return attn_out projected through w_o to shape (B, T, d_model)
+    
+    # Compute output projection: out = attn_out @ w_o
+    # attn_out shape: (B, T, d_head), w_o shape: (d_head, d_model)
+    # Result shape: (B, T, d_model)
+    out = attn_out @ w_o
+    
+    return out
 
 # Step 110 - output_projection_backward (not yet solved)
 # TODO: implement
