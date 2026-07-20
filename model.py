@@ -1017,8 +1017,55 @@ def layernorm_backward_divide_std(dy, cache):
     
     return dx
 
-# Step 90 - layernorm_backward_full (not yet solved)
-# TODO: implement
+# Step 90 - layernorm_backward_full
+import numpy as np
+
+def layernorm_backward_full(dy, cache):
+    """Full LayerNorm backward. Return {'dx', 'dgamma', 'dbeta'}."""
+    # TODO: chain rule back through affine, divide-by-std, and subtract-mean.
+    
+    # Extract values from cache
+    x = cache['x']          # (B, D)
+    x_hat = cache['x_hat']  # (B, D)
+    mean = cache['mean']    # (B, 1)
+    var = cache['var']      # (B, 1)
+    gamma = cache['gamma']  # (D,)
+    eps = cache['eps']      # scalar
+    
+    B, D = x.shape
+    
+    # Step 1: Backward through affine transformation: y = gamma * x_hat + beta
+    # dbeta = sum of dy over batch dimension
+    dbeta = np.sum(dy, axis=0)  # (D,)
+    
+    # dgamma = sum of dy * x_hat over batch dimension
+    dgamma = np.sum(dy * x_hat, axis=0)  # (D,)
+    
+    # dx_hat = dy * gamma (broadcast gamma across rows)
+    dx_hat = dy * gamma  # (B, D)
+    
+    # Step 2: Backward through divide-by-std: x_hat = x_centered / std
+    # std = sqrt(var + eps), var = mean(x_centered^2)
+    # Need to compute gradient w.r.t. x_centered accounting for variance dependence
+    
+    # Compute std (shape B, 1)
+    std = np.sqrt(var + eps)  # (B, 1)
+    
+    # dx_centered = dx_hat / std - (x_hat * sum(dx_hat * x_hat, axis=-1, keepdims=True)) / (D * std)
+    # This is the full gradient through the normalization
+    sum_dx_hat_x_hat = np.sum(dx_hat * x_hat, axis=-1, keepdims=True)  # (B, 1)
+    dx_centered = dx_hat / std - (x_hat * sum_dx_hat_x_hat) / (D * std)
+    
+    # Step 3: Backward through subtract-mean: x_centered = x - mean
+    # dx = dx_centered - mean(dx_centered, keepdims=True)
+    mean_dx_centered = np.mean(dx_centered, axis=-1, keepdims=True)  # (B, 1)
+    dx = dx_centered - mean_dx_centered  # (B, D)
+    
+    return {
+        'dx': dx,
+        'dgamma': dgamma,
+        'dbeta': dbeta
+    }
 
 # Step 91 - layernorm_backward_implementation (not yet solved)
 # TODO: implement
