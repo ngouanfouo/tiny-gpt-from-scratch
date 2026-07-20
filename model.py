@@ -783,8 +783,18 @@ def derive_dx_on_paper():
 dL/dX = dY @ W.T
 shapes: X (B, In), W (In, Out), dY (B, Out) -> dL/dX (B, In)"""
 
-# Step 76 - derive_linear_dw_on_paper (not yet solved)
-# TODO: implement
+# Step 76 - derive_linear_dw_on_paper
+def derive_linear_dw_on_paper():
+    """Return a string with the derivation of dL/dW for Y = X @ W."""
+    # TODO: return notes that include the final identity dL/dW = X.T @ dY
+    
+    return """For Y = X @ W, the loss L depends on W through Y.
+
+By the chain rule, dL/dW = X.T @ dY.
+
+Shape check: X is (B, D_in), dY is (B, D_out), so X.T @ dY has shape (D_in, D_out), matching W.
+
+Therefore: dL/dW = X.T @ dY"""
 
 # Step 77 - linear_backward_dx (not yet solved)
 # TODO: implement
