@@ -1800,8 +1800,22 @@ def get_multihead_output_sequence_length(x_heads_back):
     # Return the second dimension (T)
     return shape[1]
 
-# Step 128 - merge_heads_to_d_model (not yet solved)
-# TODO: implement
+# Step 128 - merge_heads_to_d_model
+import numpy as np
+
+def merge_heads_to_d_model(x_heads_back):
+    """Reshape (B, T, n_heads, d_head) into (B, T, d_model)."""
+    # TODO: collapse the last two axes into a single d_model axis
+    
+    # Get the shape of the input
+    B, T, n_heads, d_head = x_heads_back.shape
+    
+    # Reshape to collapse the last two dimensions
+    # The natural concatenation is: head 0's values, then head 1's, etc.
+    # Reshaping with (B, T, -1) will flatten the last two dimensions in order
+    merged = x_heads_back.reshape(B, T, n_heads * d_head)
+    
+    return merged
 
 # Step 129 - multihead_output_projection_forward (not yet solved)
 # TODO: implement
