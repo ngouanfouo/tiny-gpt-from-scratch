@@ -1124,8 +1124,33 @@ def create_token_embedding(vocab_size, d_model, scale=0.02):
     
     return E
 
-# Step 93 - token_embedding_forward (not yet solved)
-# TODO: implement
+# Step 93 - token_embedding_forward
+import numpy as np
+
+def token_embedding_forward(token_ids, embedding_matrix):
+    """Look up token embeddings for a batch of integer token ids.
+
+    Inputs:
+        token_ids: ndarray of shape (B, T), dtype int
+        embedding_matrix: ndarray of shape (V, d_model)
+    Returns:
+        out: ndarray of shape (B, T, d_model)
+        cache: dict with keys 'token_ids', 'vocab_size'
+    """
+    # TODO: look up the embedding row for each token id and build the cache
+    
+    # Look up the embedding for each token id
+    # token_ids is (B, T), embedding_matrix is (V, d_model)
+    # Result should be (B, T, d_model)
+    out = embedding_matrix[token_ids]
+    
+    # Build cache
+    cache = {
+        'token_ids': token_ids,
+        'vocab_size': embedding_matrix.shape[0]
+    }
+    
+    return out, cache
 
 # Step 94 - token_embedding_backward (not yet solved)
 # TODO: implement
