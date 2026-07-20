@@ -1554,8 +1554,50 @@ def qk_scores_backward(d_scores, cache):
         'd_k': d_k
     }
 
-# Step 115 - qkv_projection_backward (not yet solved)
-# TODO: implement
+# Step 115 - qkv_projection_backward
+import numpy as np
+
+def qkv_projection_backward(d_q, d_k, d_v, cache):
+    # TODO: backprop through Q=x@Wq, K=x@Wk, V=x@Wv to get dx and dw_q, dw_k, dw_v.
+    
+    # Extract values from cache
+    x = cache['x']      # shape (B, T, d_model)
+    w_q = cache['w_q']  # shape (d_model, d_head)
+    w_k = cache['w_k']  # shape (d_model, d_head)
+    w_v = cache['w_v']  # shape (d_model, d_head)
+    
+    # Get dimensions
+    B, T, d_model = x.shape
+    d_head = w_q.shape[1]
+    
+    # Reshape for efficient computation
+    x_flat = x.reshape(-1, d_model)        # (B*T, d_model)
+    d_q_flat = d_q.reshape(-1, d_head)     # (B*T, d_head)
+    d_k_flat = d_k.reshape(-1, d_head)     # (B*T, d_head)
+    d_v_flat = d_v.reshape(-1, d_head)     # (B*T, d_head)
+    
+    # Gradient w.r.t. x: dx = d_q @ w_q.T + d_k @ w_k.T + d_v @ w_v.T
+    # Each term: (B*T, d_head) @ (d_head, d_model) -> (B*T, d_model)
+    dx_flat = (d_q_flat @ w_q.T) + (d_k_flat @ w_k.T) + (d_v_flat @ w_v.T)
+    dx = dx_flat.reshape(B, T, d_model)
+    
+    # Gradient w.r.t. Wq: dw_q = x.T @ d_q
+    # x_flat.T: (d_model, B*T), d_q_flat: (B*T, d_head)
+    # Result: (d_model, d_head)
+    dw_q = x_flat.T @ d_q_flat
+    
+    # Gradient w.r.t. Wk: dw_k = x.T @ d_k
+    dw_k = x_flat.T @ d_k_flat
+    
+    # Gradient w.r.t. Wv: dw_v = x.T @ d_v
+    dw_v = x_flat.T @ d_v_flat
+    
+    return {
+        'dx': dx,
+        'dw_q': dw_q,
+        'dw_k': dw_k,
+        'dw_v': dw_v
+    }
 
 # Step 116 - choose_attention_head_config (not yet solved)
 # TODO: implement
