@@ -1371,8 +1371,24 @@ def softmax_attention_weights(masked_scores):
     
     return weights
 
-# Step 108 - attention_weighted_values (not yet solved)
-# TODO: implement
+# Step 108 - attention_weighted_values
+import numpy as np
+
+def attention_weighted_values(attn, v):
+    """Combine attention weights with values: out = attn @ V.
+
+    attn: (B, T, T) softmaxed attention weights
+    v:    (B, T, d_head) value vectors
+    returns: (B, T, d_head)
+    """
+    # TODO: mix the value vectors using the attention weights
+    
+    # Compute weighted sum: out = attn @ v
+    # attn shape: (B, T, T), v shape: (B, T, d_head)
+    # Result shape: (B, T, d_head)
+    out = attn @ v
+    
+    return out
 
 # Step 109 - apply_output_projection (not yet solved)
 # TODO: implement
