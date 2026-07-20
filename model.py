@@ -1067,8 +1067,50 @@ def layernorm_backward_full(dy, cache):
         'dbeta': dbeta
     }
 
-# Step 91 - layernorm_backward_implementation (not yet solved)
-# TODO: implement
+# Step 91 - layernorm_backward_implementation
+import numpy as np
+
+def layernorm_backward_implementation(d_out, cache):
+    # TODO: return {'dx', 'dgamma', 'dbeta'} gradients for LayerNorm given d_out and the forward cache.
+    
+    # Extract values from cache
+    x = cache['x']          # (N, D)
+    x_hat = cache['x_hat']  # (N, D)
+    mean = cache['mean']    # (N, 1)
+    var = cache['var']      # (N, 1)
+    gamma = cache['gamma']  # (D,)
+    eps = cache['eps']      # scalar
+    
+    N, D = x.shape
+    
+    # Step 1: Backward through affine transformation: y = gamma * x_hat + beta
+    # dbeta = sum of d_out over batch dimension
+    dbeta = np.sum(d_out, axis=0)  # (D,)
+    
+    # dgamma = sum of d_out * x_hat over batch dimension
+    dgamma = np.sum(d_out * x_hat, axis=0)  # (D,)
+    
+    # dx_hat = d_out * gamma (broadcast gamma across rows)
+    dx_hat = d_out * gamma  # (N, D)
+    
+    # Step 2: Backward through divide-by-std: x_hat = x_centered / std
+    # std = sqrt(var + eps)
+    std = np.sqrt(var + eps)  # (N, 1)
+    
+    # Full gradient through normalization
+    sum_dx_hat_x_hat = np.sum(dx_hat * x_hat, axis=-1, keepdims=True)  # (N, 1)
+    dx_centered = dx_hat / std - (x_hat * sum_dx_hat_x_hat) / (D * std)
+    
+    # Step 3: Backward through subtract-mean: x_centered = x - mean
+    # dx = dx_centered - mean(dx_centered, keepdims=True)
+    mean_dx_centered = np.mean(dx_centered, axis=-1, keepdims=True)  # (N, 1)
+    dx = dx_centered - mean_dx_centered  # (N, D)
+    
+    return {
+        'dx': dx,
+        'dgamma': dgamma,
+        'dbeta': dbeta
+    }
 
 # Step 92 - create_token_embedding (not yet solved)
 # TODO: implement
