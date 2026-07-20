@@ -1762,8 +1762,19 @@ def multihead_masked_softmax_scores(scores, mask):
     
     return weights
 
-# Step 125 - multihead_weighted_sum (not yet solved)
-# TODO: implement
+# Step 125 - multihead_weighted_sum
+import numpy as np
+
+def multihead_weighted_sum(weights, v_heads):
+    """Compute per-head attention output as weights @ V across all heads."""
+    # TODO: combine attention weights with values across heads
+    
+    # weights: (B, n_heads, T, T)
+    # v_heads: (B, n_heads, T, d_head)
+    # Result: (B, n_heads, T, d_head)
+    output = weights @ v_heads
+    
+    return output
 
 # Step 126 - transpose_heads_to_back (not yet solved)
 # TODO: implement
