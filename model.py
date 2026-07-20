@@ -1278,8 +1278,18 @@ def compute_key(x, w_k):
     
     return K
 
-# Step 102 - compute_value (not yet solved)
-# TODO: implement
+# Step 102 - compute_value
+import numpy as np
+
+def compute_value(x, w_v):
+    # TODO: project x of shape (B, T, d_model) by w_v of shape (d_model, d_head)
+    
+    # Compute V = x @ w_v using the matmul helper
+    # x shape: (B, T, d_model), w_v shape: (d_model, d_head)
+    # Result shape: (B, T, d_head)
+    V = matmul(x, w_v)
+    
+    return V
 
 # Step 103 - compute_attention_scores (not yet solved)
 # TODO: implement
