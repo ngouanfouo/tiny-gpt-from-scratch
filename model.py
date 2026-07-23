@@ -2344,8 +2344,26 @@ def stack_transformer_blocks(n_layers, d_model, n_heads, d_ff):
     
     return blocks
 
-# Step 141 - forward_through_all_blocks (not yet solved)
-# TODO: implement
+# Step 141 - forward_through_all_blocks
+def forward_through_all_blocks(x, blocks):
+    """Run x through every Transformer block in order, collecting caches."""
+    # Start with the input activation
+    h = x
+    caches = []
+    
+    # Thread through each block in order
+    for block in blocks:
+        # Run the block forward
+        result = transformer_block_forward(h, block)
+        
+        # Update the activation to the block's output
+        h = result['y']
+        
+        # Store the cache for this block
+        caches.append(result['cache'])
+    
+    # Return the final activation and the collected caches
+    return h, caches
 
 # Step 142 - backward_through_all_blocks (not yet solved)
 # TODO: implement
