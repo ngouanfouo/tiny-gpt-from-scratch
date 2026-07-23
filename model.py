@@ -2891,8 +2891,56 @@ def apply_recursive_adam(params, grads, m, v, beta1, beta2, t, lr, eps):
     else:
         return params, m, v
 
-# Step 155 - logging_and_validation_loss (not yet solved)
-# TODO: implement
+# Step 155 - logging_and_validation_loss
+import numpy as np
+
+def logging_and_validation_loss(params, val_ids, block_size, batch_size, n_eval_batches):
+    """
+    Estimate validation cross-entropy loss by averaging over several batches.
+    
+    Args:
+        params: The nested configuration/parameter tree for the transformer.
+        val_ids: A 1D NumPy array of token IDs for validation.
+        block_size: Maximum sequence length.
+        batch_size: Number of sequences per mini-batch.
+        n_eval_batches: Number of validation batches to average over.
+        
+    Returns:
+        mean_val_loss: The mean cross-entropy loss as a float.
+    """
+    # 1. Use a fixed RNG seed inside the function for reproducible evaluation windows
+    rng = np.random.default_rng(42)
+    
+    batch_losses = []
+    max_idx = len(val_ids) - block_size - 1
+    
+    for _ in range(n_eval_batches):
+        # 2. Sample validation mini-batch targets shifted by 1 token
+        starts = rng.integers(0, max_idx + 1, size=batch_size)
+        x_ids = np.stack([val_ids[s : s + block_size] for s in starts])
+        y_ids = np.stack([val_ids[s + 1 : s + block_size + 1] for s in starts])
+        
+        # 3. Forward Pass
+        # full_model_forward is expected to be globally available in the framework
+        logits, _ = full_model_forward(x_ids, params)
+        
+        # 4. Numerically stable cross-entropy calculation
+        shifted_logits = logits - np.max(logits, axis=-1, keepdims=True)
+        exp_logits = np.exp(shifted_logits)
+        probs = exp_logits / np.sum(exp_logits, axis=-1, keepdims=True)
+        
+        B, T, V = logits.shape
+        N = B * T
+        
+        flat_probs = probs.reshape(N, V)
+        flat_y = y_ids.reshape(N)
+        
+        # Compute negative log likelihood
+        loss = -np.mean(np.log(flat_probs[np.arange(N), flat_y] + 1e-15))
+        batch_losses.append(loss)
+        
+    # Return the average across all evaluated batches as a standard python float
+    return float(np.mean(batch_losses))
 
 # Step 156 - encode_prompt (not yet solved)
 # TODO: implement
