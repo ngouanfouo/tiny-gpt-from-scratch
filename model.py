@@ -2441,8 +2441,28 @@ def final_layernorm_forward(x, gamma, beta):
     
     return y, cache
 
-# Step 144 - lm_head_linear_forward (not yet solved)
-# TODO: implement
+# Step 144 - lm_head_linear_forward
+def lm_head_linear_forward(x, w_lm, b_lm):
+    """Project hidden states (B,T,d_model) to logits (B,T,vocab_size)."""
+    # Apply the linear projection: x @ w_lm
+    linear_result = linear_forward(x, w_lm)
+    y = linear_result['y']  # shape (B, T, vocab_size)
+    linear_cache = linear_result['cache']
+    
+    # Add the bias
+    bias_result = bias_add_forward(y, b_lm)
+    logits = bias_result['y']  # shape (B, T, vocab_size)
+    
+    # Build cache with the input and weight needed for backward
+    cache = {
+        'x': x,
+        'w_lm': w_lm
+    }
+    
+    return {
+        'logits': logits,
+        'cache': cache
+    }
 
 # Step 145 - full_model_forward (not yet solved)
 # TODO: implement
