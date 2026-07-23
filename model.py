@@ -3029,8 +3029,39 @@ def apply_temperature(logits, temperature):
     # 2. Rescale elementwise
     return logits / temperature
 
-# Step 161 - top_k_filter (not yet solved)
-# TODO: implement
+# Step 161 - top_k_filter
+import numpy as np
+
+def top_k_filter(logits, k):
+    """
+    Return logits with all but the top-k entries per row set to -inf.
+    
+    Args:
+        logits: A 2D NumPy array of shape (1, vocab_size).
+        k: The number of highest-probability tokens to retain (1 <= k <= vocab_size).
+        
+    Returns:
+        filtered_logits: A new 2D NumPy array with excluded values masked to -inf.
+    """
+    # 1. Ensure k is within a valid range
+    vocab_size = logits.shape[1]
+    k = min(max(1, k), vocab_size)
+    
+    # Create a fresh copy to prevent modifying the original logits array in-place
+    filtered_logits = logits.copy()
+    
+    # 2. Use argpartition to find the indices of the top-k elements.
+    # np.argpartition partitions the array such that the elements at index 
+    # (vocab_size - k) and beyond contain the largest k values in no particular order.
+    top_k_indices = np.argpartition(filtered_logits, vocab_size - k, axis=-1)
+    
+   
+    thresholds = filtered_logits[np.arange(logits.shape[0]), top_k_indices[:, vocab_size - k]]
+    
+  
+    filtered_logits[filtered_logits < thresholds[:, np.newaxis]] = -float('inf')
+    
+    return filtered_logits
 
 # Step 162 - softmax_to_probs (not yet solved)
 # TODO: implement
