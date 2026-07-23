@@ -2619,8 +2619,49 @@ def backward_through_all_blocks(d_upstream, blocks_cache, blocks_params):
     # e.g., for i in reversed(range(len(blocks_cache))): ...
     return d_upstream, []
 
-# Step 147 - initialize_adam_moments (not yet solved)
-# TODO: implement
+# Step 147 - initialize_adam_moments
+import numpy as np
+
+def initialize_adam_moments(model_params):
+    """
+    Allocate zeroed Adam first- and second-moment buffers matching model_params.
+    
+    Args:
+        model_params: A nested dict or list whose leaves are NumPy parameter arrays.
+        
+    Returns:
+        m: A parallel structure of zeroed first-moment buffers.
+        v: A parallel structure of zeroed second-moment buffers.
+    """
+    # Base case: if it's a leaf NumPy array, create independent zero copies
+    if isinstance(model_params, np.ndarray):
+        m_leaf = np.zeros_like(model_params)
+        v_leaf = np.zeros_like(model_params)
+        return m_leaf, v_leaf
+        
+    # Recursive case: Dictionary
+    elif isinstance(model_params, dict):
+        m_dict = {}
+        v_dict = {}
+        for key, value in model_params.items():
+            m_child, v_child = initialize_adam_moments(value)
+            m_dict[key] = m_child
+            v_dict[key] = v_child
+        return m_dict, v_dict
+        
+    # Recursive case: List (e.g., the block stack)
+    elif isinstance(model_params, list):
+        m_list = []
+        v_list = []
+        for item in model_params:
+            m_child, v_child = initialize_adam_moments(item)
+            m_list.append(m_child)
+            v_list.append(v_child)
+        return m_list, v_list
+        
+    # Fallback case: Pass through non-array leaves unmodified (e.g., config strings/ints)
+    else:
+        return model_params, model_params
 
 # Step 148 - initialize_adam_step_counter (not yet solved)
 # TODO: implement
