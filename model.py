@@ -2953,8 +2953,22 @@ def encode_prompt(prompt, stoi):
     # 2. Return as a 2D array of shape (1, T) with explicit integer typing
     return np.array([ids], dtype=np.int32)
 
-# Step 157 - crop_context_to_block_size (not yet solved)
-# TODO: implement
+# Step 157 - crop_context_to_block_size
+import numpy as np
+
+def crop_context_to_block_size(context_ids, block_size):
+    """
+    Keep only the most recent block_size tokens of a (1, T) context.
+    
+    Args:
+        context_ids: A 2D NumPy array of shape (1, T) representing current context.
+        block_size: Maximum sequence length supported by the positional embeddings.
+        
+    Returns:
+        cropped_context: A 2D NumPy array of shape (1, min(T, block_size)).
+    """
+    # Slice from the tail of the sequence along the time dimension (axis 1)
+    return context_ids[:, -block_size:]
 
 # Step 158 - forward_to_get_logits (not yet solved)
 # TODO: implement
