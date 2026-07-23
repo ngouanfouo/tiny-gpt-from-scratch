@@ -3112,8 +3112,26 @@ def sample_one_token(probs, rng):
     # 3. Cast explicitly to a native Python int to prevent dtype surprises down the pipeline
     return int(sampled_id)
 
-# Step 164 - append_token_to_sequence (not yet solved)
-# TODO: implement
+# Step 164 - append_token_to_sequence
+import numpy as np
+
+def append_token_to_sequence(context_ids, token_id):
+    """
+    Append token_id as a new final column to context_ids of shape (1, T).
+    
+    Args:
+        context_ids: A 2D NumPy integer array of shape (1, T).
+        token_id: A scalar int representing the freshly sampled token ID.
+        
+    Returns:
+        new_context_ids: A 2D NumPy integer array of shape (1, T+1).
+    """
+    # 1. Wrap the new scalar token ID into a 2D array of shape (1, 1)
+    # matching the dtype of the original context tensor.
+    new_token_arr = np.array([[token_id]], dtype=context_ids.dtype)
+    
+    # 2. Concatenate along the time axis (axis 1) to build a (1, T+1) tensor.
+    return np.concatenate([context_ids, new_token_arr], axis=1)
 
 # Step 165 - generation_loop_for_n_steps (not yet solved)
 # TODO: implement
