@@ -2970,8 +2970,26 @@ def crop_context_to_block_size(context_ids, block_size):
     # Slice from the tail of the sequence along the time dimension (axis 1)
     return context_ids[:, -block_size:]
 
-# Step 158 - forward_to_get_logits (not yet solved)
-# TODO: implement
+# Step 158 - forward_to_get_logits
+import numpy as np
+
+def forward_to_get_logits(params, context_ids):
+    """
+    Run the full model forward and return only the logits tensor.
+    
+    Args:
+        params: The nested configuration/parameter tree for the transformer.
+        context_ids: A 2D NumPy array of shape (1, T) representing current context.
+        
+    Returns:
+        logits: A 3D NumPy array of shape (1, T, vocab_size).
+    """
+    # 1. Drive the full forward pipeline. 
+    # Note: full_model_forward expects (x_ids, params).
+    logits, _ = full_model_forward(context_ids, params)
+    
+    # 2. Return only the logits tensor, discarding the activation cache.
+    return logits
 
 # Step 159 - take_last_position_logits (not yet solved)
 # TODO: implement
