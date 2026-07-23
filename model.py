@@ -2991,8 +2991,22 @@ def forward_to_get_logits(params, context_ids):
     # 2. Return only the logits tensor, discarding the activation cache.
     return logits
 
-# Step 159 - take_last_position_logits (not yet solved)
-# TODO: implement
+# Step 159 - take_last_position_logits
+import numpy as np
+
+def take_last_position_logits(logits):
+    """
+    Return logits at the final time step with shape (1, vocab_size).
+    
+    Args:
+        logits: A 3D NumPy array of shape (1, T, vocab_size).
+        
+    Returns:
+        last_logits: A 2D NumPy array of shape (1, vocab_size).
+    """
+    # Slice the final index along the time axis (axis 1) 
+    # using -1: to preserve the dimension shape as 1.
+    return logits[:, -1, :]
 
 # Step 160 - apply_temperature (not yet solved)
 # TODO: implement
