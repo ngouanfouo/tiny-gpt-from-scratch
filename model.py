@@ -3063,8 +3063,31 @@ def top_k_filter(logits, k):
     
     return filtered_logits
 
-# Step 162 - softmax_to_probs (not yet solved)
-# TODO: implement
+# Step 162 - softmax_to_probs
+import numpy as np
+
+def softmax_to_probs(logits):
+    """
+    Convert (1, V) logits into a row-wise probability distribution.
+    
+    Args:
+        logits: A 2D NumPy array of shape (1, vocab_size), possibly containing -inf.
+        
+    Returns:
+        probs: A 2D NumPy array of shape (1, vocab_size) where each row sums to 1.
+    """
+    # 1. Shift the logits by subtracting the maximum value per row for numerical stability.
+    # We use keepdims=True to maintain the (1, vocab_size) broadcast geometry.
+    row_max = np.max(logits, axis=-1, keepdims=True)
+    shifted_logits = logits - row_max
+    
+    # 2. Compute exponentials. e^(-inf) naturally evaluates to 0.0.
+    exp_logits = np.exp(shifted_logits)
+    
+    # 3. Normalize by the sum of exponentials across the vocabulary axis.
+    probs = exp_logits / np.sum(exp_logits, axis=-1, keepdims=True)
+    
+    return probs
 
 # Step 163 - sample_one_token (not yet solved)
 # TODO: implement
