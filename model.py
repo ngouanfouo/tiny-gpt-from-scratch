@@ -3008,8 +3008,26 @@ def take_last_position_logits(logits):
     # using -1: to preserve the dimension shape as 1.
     return logits[:, -1, :]
 
-# Step 160 - apply_temperature (not yet solved)
-# TODO: implement
+# Step 160 - apply_temperature
+import numpy as np
+
+def apply_temperature(logits, temperature):
+    """
+    Scale logits by 1/temperature before softmax sampling.
+    
+    Args:
+        logits: A 2D NumPy array of shape (1, vocab_size).
+        temperature: A positive float controlling distribution sharpness.
+        
+    Returns:
+        scaled_logits: A 2D NumPy array of shape (1, vocab_size).
+    """
+    # 1. Safeguard against near-zero temperature division (which approaches argmax)
+    if temperature <= 0.0:
+        raise ValueError("Temperature must be a positive float greater than zero.")
+        
+    # 2. Rescale elementwise
+    return logits / temperature
 
 # Step 161 - top_k_filter (not yet solved)
 # TODO: implement
