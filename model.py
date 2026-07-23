@@ -2942,8 +2942,16 @@ def logging_and_validation_loss(params, val_ids, block_size, batch_size, n_eval_
     # Return the average across all evaluated batches as a standard python float
     return float(np.mean(batch_losses))
 
-# Step 156 - encode_prompt (not yet solved)
-# TODO: implement
+# Step 156 - encode_prompt
+import numpy as np
+
+def encode_prompt(prompt, stoi):
+    """Encode a string prompt to an int ndarray of shape (1, T)."""
+    # 1. Map characters to integer IDs via the stoi dictionary mapping
+    ids = [stoi[c] for c in prompt]
+    
+    # 2. Return as a 2D array of shape (1, T) with explicit integer typing
+    return np.array([ids], dtype=np.int32)
 
 # Step 157 - crop_context_to_block_size (not yet solved)
 # TODO: implement
