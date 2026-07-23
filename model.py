@@ -3189,6 +3189,24 @@ def generation_loop_for_n_steps(params, prompt_ids, n_new_tokens, block_size, te
         
     return context_ids
 
-# Step 166 - decode_final_sequence (not yet solved)
-# TODO: implement
+# Step 166 - decode_final_sequence
+import numpy as np
+
+def decode_final_sequence(generated_ids, itos):
+    """
+    Decode a (1, T) id tensor into a string using itos.
+    
+    Args:
+        generated_ids: A 2D NumPy array of shape (1, T) containing token IDs.
+        itos: A dictionary mapping integer token IDs to string/character tokens.
+        
+    Returns:
+        decoded_string: The full decoded text string for the generated sequence.
+    """
+    # 1. Extract the 1D array of token IDs from the single batch row
+    flat_ids = generated_ids[0]
+    
+    # 2. Leverage the existing decode_ids function to transform the IDs 
+    # into characters and join them together.
+    return decode_ids(flat_ids, itos)
 
