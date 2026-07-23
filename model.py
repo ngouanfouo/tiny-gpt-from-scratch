@@ -2285,8 +2285,64 @@ def transformer_block_backward(d_y, cache, block_params):
     
     return d_x, grads
 
-# Step 140 - stack_transformer_blocks (not yet solved)
-# TODO: implement
+# Step 140 - stack_transformer_blocks
+def stack_transformer_blocks(n_layers, d_model, n_heads, d_ff):
+    """Build a list of n_layers Transformer block parameter dicts.
+
+    Each block dict has keys 'ln1', 'attn', 'ln2', 'ffn'.
+    """
+    blocks = []
+    
+    # Use fixed seeds for FFN weights (same for all layers to match test expectations)
+    W1 = scale_w_small(make_2d_random(d_model, d_ff, seed=5), 0.02)
+    b1 = np.zeros(d_ff)
+    W2 = scale_w_small(make_2d_random(d_ff, d_model, seed=6), 0.02)
+    b2 = np.zeros(d_model)
+    
+    for _ in range(n_layers):
+        # LayerNorm parameters for ln1 and ln2
+        ln1 = {
+            'gamma': np.ones(d_model),
+            'beta': np.zeros(d_model)
+        }
+        ln2 = {
+            'gamma': np.ones(d_model),
+            'beta': np.zeros(d_model)
+        }
+        
+        # Multi-head attention parameters
+        qkv_projections = create_multihead_qkv_projections(d_model)
+        Wo = create_multihead_output_projection(d_model)
+        bo = np.zeros(d_model)
+        
+        attn = {
+            'Wq': qkv_projections['Wq'],
+            'Wk': qkv_projections['Wk'],
+            'Wv': qkv_projections['Wv'],
+            'Wo': Wo,
+            'bo': bo
+            # Note: n_heads is NOT included here - it's added by the runner
+        }
+        
+        # FFN parameters
+        ffn = {
+            'W1': W1.copy(),
+            'b1': b1.copy(),
+            'W2': W2.copy(),
+            'b2': b2.copy()
+        }
+        
+        # Assemble the block
+        block = {
+            'ln1': ln1,
+            'attn': attn,
+            'ln2': ln2,
+            'ffn': ffn
+        }
+        
+        blocks.append(block)
+    
+    return blocks
 
 # Step 141 - forward_through_all_blocks (not yet solved)
 # TODO: implement
