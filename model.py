@@ -3133,8 +3133,61 @@ def append_token_to_sequence(context_ids, token_id):
     # 2. Concatenate along the time axis (axis 1) to build a (1, T+1) tensor.
     return np.concatenate([context_ids, new_token_arr], axis=1)
 
-# Step 165 - generation_loop_for_n_steps (not yet solved)
-# TODO: implement
+# Step 165 - generation_loop_for_n_steps
+import numpy as np
+
+def generation_loop_for_n_steps(params, prompt_ids, n_new_tokens, block_size, temperature, top_k, rng):
+    """
+    Iteratively generate n_new_tokens by repeatedly forwarding the cropped context.
+    
+    Args:
+        params: The nested parameter dictionary containing model weights.
+        prompt_ids: A 2D NumPy integer array of shape (1, T0) representing the initial prompt.
+        n_new_tokens: The exact number of tokens to generate sequentially.
+        block_size: Maximum sequence length the positional embeddings can handle.
+        temperature: Controls the sampling diversity (sharper vs flatter).
+        top_k: The number of highest-probability tokens to retain during filtering.
+        rng: A numpy.random.Generator instance for reproducible sampling.
+        
+    Returns:
+        context_ids: A 2D NumPy array of shape (1, T0 + n_new_tokens) containing 
+                     the original prompt and all newly sampled tokens.
+    """
+    # 1. Edge case: if no new tokens are requested, return the prompt intact immediately.
+    if n_new_tokens == 0:
+        return prompt_ids
+        
+    # Copy the prompt array to preserve the original variable externally
+    context_ids = prompt_ids.copy()
+    
+    # 2. Main autoregressive generation loop
+    for _ in range(n_new_tokens):
+        # A. Crop the running context to match the maximum context window size.
+        # We take the trailing block_size tokens along axis 1.
+        cropped_context = context_ids[:, -block_size:]
+        
+        # B. Forward pass through the network to pull full sequence logits (1, T_cropped, V)
+        logits = forward_to_get_logits(params, cropped_context)
+        
+        # C. Extract the logits only at the very last position (1, V)
+        last_logits = take_last_position_logits(logits)
+        
+        # D. Rescale logits using the temperature multiplier
+        scaled_logits = apply_temperature(last_logits, temperature)
+        
+        # E. Keep the top-k choices and set the remaining candidates to -inf
+        filtered_logits = top_k_filter(scaled_logits, top_k)
+        
+        # F. Convert the filtered logits array into a valid probability distribution
+        probs = softmax_to_probs(filtered_logits)
+        
+        # G. Categorically sample a single token id from the distribution
+        next_token_id = sample_one_token(probs, rng)
+        
+        # H. Append the freshly sampled token onto the full uncropped history
+        context_ids = append_token_to_sequence(context_ids, next_token_id)
+        
+    return context_ids
 
 # Step 166 - decode_final_sequence (not yet solved)
 # TODO: implement
