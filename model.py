@@ -3089,8 +3089,28 @@ def softmax_to_probs(logits):
     
     return probs
 
-# Step 163 - sample_one_token (not yet solved)
-# TODO: implement
+# Step 163 - sample_one_token
+import numpy as np
+
+def sample_one_token(probs, rng):
+    """
+    Sample one token id from probs of shape (1, vocab_size) using rng.
+    
+    Args:
+        probs: A 2D NumPy array of shape (1, vocab_size) whose row sums to 1.
+        rng: A numpy.random.Generator instance for reproducible sampling.
+        
+    Returns:
+        token_id: A Python int representing the sampled token index.
+    """
+    # 1. Flatten to a 1D vector over the vocabulary since batch size is 1
+    p_vector = probs[0]
+    
+    # 2. Sample an index based on the categorical distribution
+    sampled_id = rng.choice(len(p_vector), p=p_vector)
+    
+    # 3. Cast explicitly to a native Python int to prevent dtype surprises down the pipeline
+    return int(sampled_id)
 
 # Step 164 - append_token_to_sequence (not yet solved)
 # TODO: implement
