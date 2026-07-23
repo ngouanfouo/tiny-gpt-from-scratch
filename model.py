@@ -2052,11 +2052,229 @@ def pre_layernorm_sublayer_forward(x, ln_params, sublayer_fn, sublayer_params):
         'cache': cache
     }
 
-# Step 138 - transformer_block_forward (not yet solved)
-# TODO: implement
+# Step 138 - transformer_block_forward
+def multi_head_attention_forward(x, attn_params):
+    """Multi-head attention forward pass."""
+    # Extract parameters
+    Wq = attn_params['Wq']
+    Wk = attn_params['Wk']
+    Wv = attn_params['Wv']
+    Wo = attn_params['Wo']
+    bo = attn_params.get('bo', np.zeros(Wo.shape[1]))  # Get output bias, default to zeros
+    n_heads = attn_params['n_heads']
+    
+    B, T, d_model = x.shape
+    d_head = d_model // n_heads
+    
+    # Step 1: QKV projections
+    Q = compute_query(x, Wq)
+    K = compute_key(x, Wk)
+    V = compute_value(x, Wv)
+    
+    # Step 2: Reshape to heads
+    Q_heads = reshape_to_heads(Q, n_heads, d_head)
+    K_heads = reshape_to_heads(K, n_heads, d_head)
+    V_heads = reshape_to_heads(V, n_heads, d_head)
+    
+    # Step 3: Transpose heads to front
+    Q_heads_T = transpose_heads_to_front(Q_heads)
+    K_heads_T = transpose_heads_to_front(K_heads)
+    V_heads_T = transpose_heads_to_front(V_heads)
+    
+    # Step 4: Compute attention scores
+    scores = np.matmul(Q_heads_T, K_heads_T.transpose(0, 1, 3, 2))
+    
+    # Step 5: Scale scores
+    scaled_scores = scores / np.sqrt(d_head)
+    
+    # Step 6: Build causal mask
+    mask = build_causal_mask(T)
+    
+    # Step 7: Apply mask and softmax
+    weights = multihead_masked_softmax_scores(scaled_scores, mask)
+    
+    # Step 8: Weighted sum
+    attn_out_heads = multihead_weighted_sum(weights, V_heads_T)
+    
+    # Step 9: Transpose heads back
+    attn_out_back = transpose_heads_to_back(attn_out_heads)
+    
+    # Step 10: Merge heads
+    merged = merge_heads_to_d_model(attn_out_back)
+    
+    # Step 11: Output projection with bias
+    proj_out = apply_output_projection(merged, Wo)
+    out = proj_out + bo  # Add output bias
+    
+    # Build cache for backward pass
+    cache = {
+        'x': x,
+        'Q': Q,
+        'K': K,
+        'V': V,
+        'Q_heads': Q_heads,
+        'K_heads': K_heads,
+        'V_heads': V_heads,
+        'Q_heads_T': Q_heads_T,
+        'K_heads_T': K_heads_T,
+        'V_heads_T': V_heads_T,
+        'scores': scores,
+        'scaled_scores': scaled_scores,
+        'weights': weights,
+        'attn_out_heads': attn_out_heads,
+        'attn_out_back': attn_out_back,
+        'merged': merged,
+        'proj_out': proj_out,
+        'Wq': Wq,
+        'Wk': Wk,
+        'Wv': Wv,
+        'Wo': Wo,
+        'bo': bo,
+        'n_heads': n_heads,
+        'd_head': d_head,
+        'mask': mask
+    }
+    
+    return {'y': out, 'cache': cache}
 
-# Step 139 - transformer_block_backward (not yet solved)
-# TODO: implement
+def position_wise_ffn_forward(x, ffn_params):
+    """Position-wise FFN forward pass."""
+    # Extract parameters
+    w1 = ffn_params['w1']
+    b1 = ffn_params['b1']
+    w2 = ffn_params['w2']
+    b2 = ffn_params['b2']
+    
+    # Step 1: First linear layer
+    h1_result = ffn_linear_one_forward(x, w1, b1)
+    h1 = h1_result['h1']
+    h1_cache = h1_result['cache']
+    
+    # Step 2: ReLU activation
+    a1, relu_cache = ffn_activation_forward(h1)
+    
+    # Step 3: Second linear layer
+    h2_result = ffn_linear_two_forward(a1, w2, b2)
+    h2 = h2_result['h2']
+    h2_cache = h2_result['cache']
+    
+    # Build cache for backward pass
+    cache = {
+        'x': x,
+        'w1': w1,
+        'b1': b1,
+        'w2': w2,
+        'b2': b2,
+        'h1': h1,
+        'a1': a1,
+        'h2': h2,
+        'h1_cache': h1_cache,
+        'relu_cache': relu_cache,
+        'h2_cache': h2_cache
+    }
+    
+    return {'y': h2, 'cache': cache}
+
+def transformer_block_forward(x, block_params):
+    """Run one pre-LN Transformer block forward.
+
+    Args:
+        x: ndarray of shape (B, T, d_model).
+        block_params: dict with keys 'ln1', 'attn', 'ln2', 'ffn'.
+
+    Returns:
+        dict with 'y' (B, T, d_model) and 'cache' with keys
+        'attn_branch' and 'ffn_branch'.
+    """
+    # First sublayer: LayerNorm + Multi-head Self-Attention with residual
+    attn_result = pre_layernorm_sublayer_forward(
+        x,
+        block_params['ln1'],
+        multi_head_attention_forward,
+        block_params['attn']
+    )
+    
+    # Second sublayer: LayerNorm + Position-wise FFN with residual
+    ffn_result = pre_layernorm_sublayer_forward(
+        attn_result['y'],
+        block_params['ln2'],
+        position_wise_ffn_forward,
+        block_params['ffn']
+    )
+    
+    return {
+        'y': ffn_result['y'],
+        'cache': {
+            'attn_branch': attn_result['cache'],
+            'ffn_branch': ffn_result['cache']
+        }
+    }
+
+# Step 139 - transformer_block_backward
+def transformer_block_backward(d_y, cache, block_params):
+    """Backward pass for a pre-LN Transformer block."""
+    
+    # Recover x from cache and rebuild a complete cache
+    x = cache['attn_branch']['x']
+    complete_cache = _complete_block_cache(x, block_params)
+    
+    # Unpack complete cache
+    attn_branch_cache = complete_cache['attn_branch']
+    ffn_branch_cache = complete_cache['ffn_branch']
+    
+    # ----- FFN branch backward (outer residual) -----
+    # y = h1 + FFN(LN2(h1))
+    
+    # Route d_y through residual: skip connection and sublayer
+    d_h1_residual, d_ffn_out = residual_backward(d_y)
+    
+    # Backprop through FFN sublayer
+    d_ffn_ln_out, ffn_grads = _ffn_sublayer_backward(
+        d_ffn_out,
+        ffn_branch_cache['sublayer_cache'],
+        block_params['ffn']
+    )
+    
+    # Backprop through LayerNorm2
+    d_h1_ln, d_ln2_gamma, d_ln2_beta = layernorm_backward_affine(
+        d_ffn_ln_out,
+        ffn_branch_cache['ln_cache']
+    )
+    
+    # Sum gradient contributions at h1
+    d_h1 = d_h1_residual + d_h1_ln
+    
+    # ----- Attention branch backward (inner residual) -----
+    # h1 = x + Attn(LN1(x))
+    
+    # Route d_h1 through residual: skip connection and sublayer
+    d_x_residual, d_attn_out = residual_backward(d_h1)
+    
+    # Backprop through Attention sublayer
+    d_attn_ln_out, attn_grads = _attn_sublayer_backward(
+        d_attn_out,
+        attn_branch_cache['sublayer_cache'],
+        block_params['attn']
+    )
+    
+    # Backprop through LayerNorm1
+    d_x_ln, d_ln1_gamma, d_ln1_beta = layernorm_backward_affine(
+        d_attn_ln_out,
+        attn_branch_cache['ln_cache']
+    )
+    
+    # Sum gradient contributions at x
+    d_x = d_x_residual + d_x_ln
+    
+    # Assemble gradients
+    grads = {
+        'ln1': {'gamma': d_ln1_gamma, 'beta': d_ln1_beta},
+        'ln2': {'gamma': d_ln2_gamma, 'beta': d_ln2_beta},
+        'attn': attn_grads,
+        'ffn': ffn_grads
+    }
+    
+    return d_x, grads
 
 # Step 140 - stack_transformer_blocks (not yet solved)
 # TODO: implement
