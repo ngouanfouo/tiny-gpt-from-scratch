@@ -2405,8 +2405,41 @@ def backward_through_all_blocks(d_y, caches, blocks):
     
     return d_x, grads_list
 
-# Step 143 - final_layernorm_forward (not yet solved)
-# TODO: implement
+# Step 143 - final_layernorm_forward
+def final_layernorm_forward(x, gamma, beta):
+    """Apply LayerNorm to a (B, T, d_model) tensor with affine params gamma, beta.
+
+    Returns (y, cache) where cache has keys 'x', 'mean', 'var', 'x_hat', 'gamma'.
+    """
+    # Get the shape
+    B, T, D = x.shape
+    
+    # Reshape x to 2D: (B*T, D)
+    x_flat = x.reshape(-1, D)
+    
+    # Apply LayerNorm using the 2D helper
+    result = layernorm_forward_affine(x_flat, gamma, beta, eps=1e-5)
+    y_flat = result['y']
+    cache_flat = result['cache']
+    
+    # Reshape y back to 3D: (B, T, D)
+    y = y_flat.reshape(B, T, D)
+    
+    # Reshape cache values back to 3D for mean, var, x_hat
+    mean = cache_flat['mean'].reshape(B, T, 1)
+    var = cache_flat['var'].reshape(B, T, 1)
+    x_hat = cache_flat['x_hat'].reshape(B, T, D)
+    
+    # Build cache with the 3D tensors
+    cache = {
+        'x': x,
+        'mean': mean,
+        'var': var,
+        'x_hat': x_hat,
+        'gamma': gamma
+    }
+    
+    return y, cache
 
 # Step 144 - lm_head_linear_forward (not yet solved)
 # TODO: implement
